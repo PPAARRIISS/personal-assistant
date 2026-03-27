@@ -1,0 +1,5 @@
+token_cache.json
+productivity.db
+__pycache__/
+*.pyc
+.env
