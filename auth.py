@@ -18,32 +18,43 @@ def init_auth_db():
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             username   TEXT UNIQUE NOT NULL,
             name       TEXT NOT NULL,
+            email      TEXT UNIQUE NOT NULL,
             password   TEXT NOT NULL,
             onboarded  INTEGER DEFAULT 0,
             created_at TEXT DEFAULT (datetime('now'))
         )
     """)
+    # Migration: add email column if missing
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''")
+    except Exception:
+        pass
     conn.commit()
     conn.close()
 
 
-def register_user(username, name, password):
+def register_user(username, name, email, password):
     username = username.strip().lower()
-    if not username or not name or not password:
+    email = email.strip().lower()
+    if not username or not name or not email or not password:
         return False, "All fields are required."
+    if "@" not in email or "." not in email:
+        return False, "Please enter a valid email address."
     if len(password) < 6:
         return False, "Password must be at least 6 characters."
     hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     try:
         conn = get_conn()
         conn.execute(
-            "INSERT INTO users (username, name, password) VALUES (?, ?, ?)",
-            (username, name.strip(), hashed)
+            "INSERT INTO users (username, name, email, password) VALUES (?, ?, ?, ?)",
+            (username, name.strip(), email, hashed)
         )
         conn.commit()
         conn.close()
         return True, None
-    except sqlite3.IntegrityError:
+    except sqlite3.IntegrityError as e:
+        if "email" in str(e):
+            return False, "An account with this email already exists."
         return False, "Username already taken. Please choose another."
 
 

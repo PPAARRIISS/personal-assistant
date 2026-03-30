@@ -109,6 +109,7 @@ def show_signup():
         with st.form("signup_form"):
             name = st.text_input("Your name")
             username = st.text_input("Username (no spaces)")
+            email = st.text_input("Email address")
             password = st.text_input("Password (min 6 characters)", type="password")
             password2 = st.text_input("Confirm password", type="password")
             submitted = st.form_submit_button("Create Account", use_container_width=True, type="primary")
@@ -116,7 +117,7 @@ def show_signup():
                 if password != password2:
                     st.error("Passwords don't match.")
                 else:
-                    ok, err = auth.register_user(username, name, password)
+                    ok, err = auth.register_user(username, name, email, password)
                     if ok:
                         st.success("Account created! Signing you in...")
                         st.session_state.logged_in = True
