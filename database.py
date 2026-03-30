@@ -57,6 +57,16 @@ def init_db():
         )
     """)
 
+    # Migrations: add missing columns to existing tables
+    for col, definition in [
+        ("username", "TEXT NOT NULL DEFAULT 'default'"),
+    ]:
+        for table in ["tasks", "time_logs"]:
+            try:
+                c.execute(f"ALTER TABLE {table} ADD COLUMN {col} {definition}")
+            except Exception:
+                pass
+
     conn.commit()
     conn.close()
 
