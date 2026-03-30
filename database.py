@@ -11,9 +11,20 @@ def get_conn():
     return conn
 
 
+def _has_column(c, table, column):
+    c.execute(f"PRAGMA table_info({table})")
+    return any(row[1] == column for row in c.fetchall())
+
+
 def init_db():
     conn = get_conn()
     c = conn.cursor()
+
+    # Drop and recreate tasks/time_logs if they have wrong schema
+    for table in ["tasks", "time_logs"]:
+        c.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'")
+        if c.fetchone() and not _has_column(c, table, "username"):
+            c.execute(f"DROP TABLE {table}")
 
     c.execute("""
         CREATE TABLE IF NOT EXISTS pillars (
