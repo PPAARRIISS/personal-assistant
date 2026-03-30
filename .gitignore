@@ -1,5 +1,6 @@
 token_cache.json
 productivity.db
+users.db
 __pycache__/
 *.pyc
 .env
