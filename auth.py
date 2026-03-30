@@ -42,7 +42,9 @@ def register_user(username, name, email, password):
         return False, "Please enter a valid email address."
     if len(password) < 6:
         return False, "Password must be at least 6 characters."
-    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+    if isinstance(hashed, bytes):
+        hashed = hashed.decode("utf-8")
     try:
         conn = get_conn()
         conn.execute(
@@ -65,7 +67,7 @@ def verify_login(username, password):
         "SELECT * FROM users WHERE username = ?", (username,)
     ).fetchone()
     conn.close()
-    if row and bcrypt.checkpw(password.encode(), row["password"].encode()):
+    if row and bcrypt.checkpw(password.encode("utf-8"), row["password"].encode("utf-8")):
         return True, row["name"], bool(row["onboarded"])
     return False, None, False
 
